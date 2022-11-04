@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/jWeibelbootcamp/Employee-Tracker/issues"
   },
-  "homepage": "https://github.com/jWeibelbootcamp/Employee-Tracker#readme"
+  "homepage": "https://github.com/jWeibelbootcamp/Employee-Tracker#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "inquirer": "^8.2.4",
+    "mysql2": "^2.3.3"
+  }
 }
