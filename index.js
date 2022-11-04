@@ -2,7 +2,7 @@ const db = require('./db/connection');
 const inquirer = require('inquirer');
 
 const mainMenu = () => {
-    inquirer.prompt({ type: 'list', name: 'task', message: 'Select your desired task.', choices: ['View Departments', 'View Roles', 'View Employees', 'Add Department', 'Add Role', 'Add Employee'] })
+    inquirer.prompt({ type: 'list', name: 'task', message: 'Select your desired task.', choices: ['View Departments', 'View Roles', 'View Employees', 'Add Department', 'Add Role', 'Add Employee', 'Update Employee', 'Quit'] })
         .then(({ task }) => {
             if (task === 'View Departments') {
                 viewDepartments();
@@ -16,6 +16,8 @@ const mainMenu = () => {
                 addRole();
             } else if (task === 'Add Employee') {
                 addEmployee();
+            } else if (task === 'Update Employee') {
+                updateEmployee();
             } else {
                 process.exit();
             };
@@ -46,14 +48,14 @@ const viewEmployees = () => {
 const addDepartment = () => {
     inquirer.prompt({ type: 'input', name: 'name', message: 'Enter department name.' }).then(answer => {
         db.promise().query("INSERT INTO department SET ?", { dept_name: answer.name })
-        .then(([response]) => {
-            if (response.affectedRows > 0) {
-                viewDepartments();
-            } else {
-                console.info('Failed to add department.');
-                mainMenu();
-            };
-        });
+            .then(([response]) => {
+                if (response.affectedRows > 0) {
+                    viewDepartments();
+                } else {
+                    console.info('Failed to add department.');
+                    mainMenu();
+                };
+            });
     });
 };
 
@@ -62,36 +64,56 @@ const addRole = async () => {
     const departmentArray = departments.map(({ id, dept_name }) => ({ name: dept_name, value: id }))
     inquirer.prompt([{ type: 'input', name: 'role', message: 'What is the new role?' }, { type: 'input', name: 'salary', message: 'Enter the salary.' }, { type: 'list', name: 'department', message: 'Please select the department.', choices: departmentArray }]).then(answer => {
         db.promise().query("INSERT INTO role SET ?", { title: answer.role, salary: answer.salary, dept_id: answer.department })
-        .then(([response]) => {
-            if (response.affectedRows > 0) {
-                viewRoles();
-            } else {
-                console.info('Failed to add role.');
-                mainMenu();
-            };
-        });
+            .then(([response]) => {
+                if (response.affectedRows > 0) {
+                    viewRoles();
+                } else {
+                    console.info('Failed to add role.');
+                    mainMenu();
+                };
+            });
     })
 };
 
 const addEmployee = async () => {
-    const [roles] = await db.promise().query('SELECT * FROM role')
-    const rolesArray = roles.map(({ id, title }) => ({ name: title, value: id }))
-    
-    const [employees] = await db.promise().query('SELECT * FROM employee')
+    const [roles] = await db.promise().query('SELECT * FROM role');
+    const rolesArray = roles.map(({ id, title }) => ({ name: title, value: id }));
+
+    const [employees] = await db.promise().query('SELECT * FROM employee');
     const employeeArray = employees.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id }));
-    
-    const employeeNone = [...employeeArray, { name: 'None', value: null}];
+
+    const employeeNone = [...employeeArray, { name: 'None', value: null }];
 
     inquirer.prompt([{ type: 'input', name: 'first', message: 'Enter first name.' }, { type: 'input', name: 'last', message: 'Enter last name.' }, { type: 'list', name: 'role', message: 'Please select the role.', choices: rolesArray }, { type: 'list', name: 'manager', message: 'Select the manager.', choices: employeeNone }]).then(answer => {
         db.promise().query("INSERT INTO employee SET ?", { first_name: answer.first, last_name: answer.last, role_id: answer.role, manager_id: answer.manager })
-        .then(([response]) => {
-            if (response.affectedRows > 0) {
-                viewEmployees();
-            } else {
-                console.info('Failed to add role.');
-                mainMenu();
-            };
-        });
+            .then(([response]) => {
+                if (response.affectedRows > 0) {
+                    viewEmployees();
+                } else {
+                    console.info('Failed to add role.');
+                    mainMenu();
+                };
+            });
+    })
+};
+
+const updateEmployee = async () => {
+    const [employees] = await db.promise().query('SELECT * FROM employee');
+    const employeeArray = employees.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id }));
+
+    const [roles] = await db.promise().query('SELECT * FROM role');
+    const rolesArray = roles.map(({ id, title }) => ({ name: title, value: id }));
+
+    inquirer.prompt([{ type: 'list', name: 'employee', message: 'Select employee.', choices: employeeArray }, { type: 'list', name: 'role', message: 'Select a new role.', choices: rolesArray }]).then(answer => {
+        db.promise().query('UPDATE employee SET ? WHERE employee.id = ?', [{ role_id: answer.role }, answer.employee])
+            .then(([response]) => {
+                if (response.affectedRows > 0) {
+                    viewEmployees();
+                } else {
+                    console.info('Failed to add role.');
+                    mainMenu();
+                };
+            });
     })
 };
 
