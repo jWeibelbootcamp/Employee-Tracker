@@ -2,7 +2,7 @@ const db = require('./db/connection');
 const inquirer = require('inquirer');
 
 const mainMenu = () => {
-    inquirer.prompt({ type: 'list', name: 'task', message: 'Select your desired task.', choices: ['View Departments', 'View Roles', 'View Employees', 'Add Department', 'Add Role', 'Add Employee', 'Update Employee', 'Quit'] })
+    inquirer.prompt({ type: 'list', name: 'task', message: 'Select your desired task.', choices: ['View Departments', 'View Roles', 'View Employees', 'Add Department', 'Add Role', 'Add Employee', 'Update Employee', 'Delete Department', 'Delete Role', 'Delete Employee', 'Quit'] })
         .then(({ task }) => {
             if (task === 'View Departments') {
                 viewDepartments();
@@ -18,6 +18,12 @@ const mainMenu = () => {
                 addEmployee();
             } else if (task === 'Update Employee') {
                 updateEmployee();
+            } else if (task === 'Delete Department') {
+                deleteDepartment();
+            } else if (task === 'Delete Role') {
+                deleteRole();
+            } else if (task === 'Delete Employee') {
+                deleteEmployee();
             } else {
                 process.exit();
             };
@@ -122,18 +128,18 @@ const updateEmployee = async () => {
     });
 };
 
-// Deleting functions: 
+// Deleting functions:      not working yet
 const deleteDepartment = async () => {
     const [departments] = await db.promise().query('SELECT * FROM department')
     const departmentArray = departments.map(({ id, dept_name }) => ({ name: dept_name, value: id }));
     
-    inquirer.prompt({ type: 'input', name: 'name', message: 'Enter department name.' }).then(answer => {
-        db.promise().query("INSERT INTO department SET ?", { dept_name: answer.name })
+    inquirer.prompt([{ type: 'list', name: 'department', message: 'Select Department to Delete:', choices: departmentArray }]).then(answer => {
+        db.promise().query("DELETE FROM department WHERE department.id = ?", { dept_name: answer.department })
             .then(([response]) => {
                 if (response.affectedRows > 0) {
                     viewDepartments();
                 } else {
-                    console.info('Failed to add department.');
+                    console.info('Failed to delete department.');
                     mainMenu();
                 };
             });
