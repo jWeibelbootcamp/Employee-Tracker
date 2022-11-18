@@ -18,12 +18,12 @@ const mainMenu = () => {
                 addEmployee();
             } else if (task === 'Update Employee') {
                 updateEmployee();
-            } else if (task === 'Delete Department') {
-                deleteDepartment();
-            } else if (task === 'Delete Role') {
-                deleteRole();
-            } else if (task === 'Delete Employee') {
-                deleteEmployee();
+            // } else if (task === 'Delete Department') {
+            //     deleteDepartment();
+            // } else if (task === 'Delete Role') {
+            //     deleteRole();
+            // } else if (task === 'Delete Employee') {
+            //     deleteEmployee();
             } else {
                 process.exit();
             };
@@ -129,22 +129,22 @@ const updateEmployee = async () => {
 };
 
 // Deleting functions:      not working yet
-const deleteDepartment = async () => {
-    const [departments] = await db.promise().query('SELECT * FROM department')
-    const departmentArray = departments.map(({ id, dept_name }) => ({ name: dept_name, value: id }));
+// const deleteDepartment = async () => {
+//     const [departments] = await db.promise().query('SELECT * FROM department')
+//     const departmentArray = departments.map(({ id, dept_name }) => ({ name: dept_name, value: id }));
     
-    inquirer.prompt([{ type: 'list', name: 'department', message: 'Select Department to Delete:', choices: departmentArray }]).then(answer => {
-        db.promise().query("DELETE FROM department WHERE department.id = ?", { dept_name: answer.department })
-            .then(([response]) => {
-                if (response.affectedRows > 0) {
-                    viewDepartments();
-                } else {
-                    console.info('Failed to delete department.');
-                    mainMenu();
-                };
-            });
-    });
-};
+//     inquirer.prompt([{ type: 'list', name: 'department', message: 'Select Department to Delete:', choices: departmentArray }]).then(answer => {
+//         db.promise().query("DELETE FROM department WHERE department.id = ?", { dept_name: answer.department })
+//             .then(([response]) => {
+//                 if (response.affectedRows > 0) {
+//                     viewDepartments();
+//                 } else {
+//                     console.info('Failed to delete department.');
+//                     mainMenu();
+//                 };
+//             });
+//     });
+// };
 
 
 mainMenu();
